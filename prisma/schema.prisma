@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STAFF
+  CARRIER
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  CANCELLED
+  NO_SHOW
+  COMPLETED
+}
+
+enum LoadType {
+  INBOUND
+  OUTBOUND
+  BOTH
+}
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  hashedPassword String
+  role           Role     @default(CARRIER)
+  company        String?
+  phone          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  appointments Appointment[]
+}
+
+model Dock {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  schedules    DockSchedule[]
+  appointments Appointment[]
+}
+
+model DockSchedule {
+  id               String   @id @default(cuid())
+  dockId           String
+  dayOfWeek        Int
+  openTime         String
+  closeTime        String
+  slotDurationMins Int      @default(60)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  dock Dock @relation(fields: [dockId], references: [id], onDelete: Cascade)
+
+  @@unique([dockId, dayOfWeek])
+}
+
+model Appointment {
+  id           String            @id @default(cuid())
+  dockId       String
+  carrierId    String
+  date         DateTime          @db.Date
+  startTime    String
+  endTime      String
+  status       AppointmentStatus @default(PENDING)
+  loadType     LoadType          @default(INBOUND)
+  poNumber     String?
+  notes        String?
+  truckLicense String?
+  driverName   String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  dock    Dock @relation(fields: [dockId], references: [id])
+  carrier User @relation(fields: [carrierId], references: [id])
+
+  @@index([dockId, date])
+  @@index([carrierId])
+  @@index([date])
+}
+
+model BlackoutDate {
+  id        String   @id @default(cuid())
+  date      DateTime @unique @db.Date
+  reason    String?
+  createdAt DateTime @default(now())
+}
