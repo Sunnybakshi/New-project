@@ -77,9 +77,13 @@ export default function AppointmentCard({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onCancel(appointment.id)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onCancel(appointment.id);
+              }}
               disabled={cancelling}
-              className="shrink-0 text-destructive border-destructive/50 hover:bg-destructive hover:text-destructive-foreground"
+              className="relative z-10 shrink-0 text-destructive border-destructive/50 hover:bg-destructive hover:text-destructive-foreground"
             >
               {cancelling ? "Cancelling..." : "Cancel"}
             </Button>

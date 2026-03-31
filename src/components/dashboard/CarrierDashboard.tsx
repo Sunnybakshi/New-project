@@ -108,16 +108,19 @@ export default function CarrierDashboard() {
     return (
       <div className="space-y-3">
         {items.map((appt) => (
-          <Link key={appt.id} href={`/appointments/${appt.id}`} className="block">
+          <div key={appt.id} className="relative">
             <AppointmentCard
               appointment={appt}
-              onCancel={(id) => {
-                // Stop link navigation when clicking cancel
-                handleCancel(id);
-              }}
+              onCancel={handleCancel}
               cancelling={cancellingId === appt.id}
             />
-          </Link>
+            {/* Invisible overlay for navigation — only covers non-button area */}
+            <Link
+              href={`/appointments/${appt.id}`}
+              className="absolute inset-0 z-0"
+              aria-label={`View appointment at ${appt.dock.name}`}
+            />
+          </div>
         ))}
       </div>
     );
